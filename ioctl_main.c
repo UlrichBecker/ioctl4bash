@@ -96,9 +96,9 @@ static int readNumber( long* pNum, const char* str )
    size_t l = strlen( str );
 
    if( l >= 2 && str[0] == '0' && str[1] == 'x' )
-      *pNum = strtol( &str[2], &pEnd, 16 );
+      *pNum = strtoll( &str[2], &pEnd, 16 );
    else
-      *pNum = strtol( str, &pEnd, 10 );
+      *pNum = strtoll( str, &pEnd, 10 );
 
    return (*pEnd == '\0')? l : -1;
 }
