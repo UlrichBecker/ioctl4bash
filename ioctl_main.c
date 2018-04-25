@@ -17,7 +17,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include <parse_opts.h>
+#include "parse_opts.h"
 
 
 #ifndef MAX_PIPE_SIZE_INFO
@@ -115,6 +115,10 @@ static void printHelp( FILE* pStream, const char* pName, struct OPTION_BLOCK_T p
 
 /*!----------------------------------------------------------------------------
 */
+#define FSM_TRANSITION( newStade, attr... ) state = newStade
+#define FSM_INIT_FSM( startState, attr... ) INPUT_FSM state = startState
+#define FSM_DECLARE_STATE( state, attr... ) state
+
 static int parseCommandLine( IOCTL_T* pData, int argc, char** ppArgv )
 {
    int i;
@@ -192,13 +196,13 @@ static int parseCommandLine( IOCTL_T* pData, int argc, char** ppArgv )
 
    typedef enum
    {
-      READ_FILE,
-      READ_CMD,
-      READ_VALUE,
-      READY
+      FSM_DECLARE_STATE( READ_FILE, label = 'read file name' ),
+      FSM_DECLARE_STATE( READ_CMD,  label = 'read ioctl-command' ),
+      FSM_DECLARE_STATE( READ_VALUE, label = 'read value of ioctl-command' ),
+      FSM_DECLARE_STATE( READY )
    } INPUT_FSM; 
 
-   INPUT_FSM fsm = READ_FILE;
+   FSM_INIT_FSM( READ_FILE );
 
    memset( pData, 0, sizeof(IOCTL_T) );
    for( i = 1; i < argc; i++ )
@@ -209,12 +213,12 @@ static int parseCommandLine( IOCTL_T* pData, int argc, char** ppArgv )
       if( i == argc )
          break;
 
-      switch( fsm )
+      switch( state )
       {
          case READ_FILE:
          {
             pData->filename = ppArgv[i];
-            fsm = READ_CMD;
+            FSM_TRANSITION( READ_CMD );
             break;
          }
          case READ_CMD:
@@ -229,7 +233,7 @@ static int parseCommandLine( IOCTL_T* pData, int argc, char** ppArgv )
                return -1;
             }
             cmdSet = true;
-            fsm = READ_VALUE;
+            FSM_TRANSITION( READ_VALUE );
             break;
          }
          case READ_VALUE:
@@ -250,7 +254,7 @@ static int parseCommandLine( IOCTL_T* pData, int argc, char** ppArgv )
                printHelp( stderr, ppArgv[0], blockList );
                return -1;
             }
-            fsm = READY;
+            FSM_TRANSITION( READY );
             break;
          }
          case READY:
