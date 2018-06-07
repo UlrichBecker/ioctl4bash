@@ -7,7 +7,7 @@
 ## Author: Ulrich Becker                                                     ##
 ## Date:   22.03.2016                                                        ##
 ###############################################################################
-BASEDIR = .
+BASEDIR ?= .
 SOURCES = ioctl_main.c parse_opts.c
 EXE_NAME = ioctl
 
@@ -16,7 +16,7 @@ GIT_REPOSITORY_URL = https://raw.githubusercontent.com/UlrichBecker/command_line
 
 VPATH= $(BASEDIR)
 INCDIR = $(BASEDIR)
-CFLAGS = -g -O0 
+CFLAGS ?= -g -O0
 
 CC     ?=gcc
 PREFIX ?= /usr/local/bin
