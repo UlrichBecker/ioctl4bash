@@ -8,19 +8,25 @@
 ## Date:   22.03.2016                                                        ##
 ###############################################################################
 BASEDIR ?= .
+EXE_NAME ?= ioctl
 SOURCES = ioctl_main.c parse_opts.c
-EXE_NAME = ioctl
 
 # We need some source files from a other git-repository...
 GIT_REPOSITORY_URL = https://raw.githubusercontent.com/UlrichBecker/command_line_option_parser/master/src/
 
-VPATH= $(BASEDIR)
+# At the moment this program doesn't have a commandline-option with
+# needs obligatory argument, so we can reduce the size of the binary:
+PRE_DEFINES = CONFIG_CLOP_NO_REQUIRED_ARG
+
+VPATH  = $(BASEDIR)
 INCDIR = $(BASEDIR)
 CFLAGS ?= -g -O0
 
-CC     ?=gcc
+CC     ?= gcc
 PREFIX ?= /usr/local/bin
-CFLAGS += $(addprefix -I,$(INCDIR))
+_CFLAGS += $(CFLAGS)
+_CFLAGS += $(addprefix -I,$(INCDIR))
+_CFLAGS += $(addprefix -D,$(PRE_DEFINES))
 
 OBJDIR=.obj
 
@@ -40,10 +46,10 @@ $(OBJDIR):
 	mkdir $(OBJDIR)
 
 $(OBJDIR)/%.o: %.c $(SOURCES) $(OBJDIR) parse_opts.h
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(_CFLAGS)
 
 $(EXE_NAME): $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+	$(CC) -o $@ $^ $(_CFLAGS) $(LIBS)
 
 .PHONY: clean
 clean:
@@ -56,6 +62,7 @@ wipe: clean
 
 .PHONY: install
 install:
+	mkdir -p $(PREFIX)
 	install -s -D -m 755 $(EXE_NAME) $(PREFIX)
 
 #=================================== EOF ======================================
