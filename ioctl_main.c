@@ -124,6 +124,7 @@ static int parseCommandLine( IOCTL_T* pData, int argc, char** ppArgv )
    int i;
    bool cmdSet = false;
    int ret = 0;
+
    struct OPTION_BLOCK_T blockList[] =
    {
       {
@@ -278,6 +279,7 @@ static int parseCommandLine( IOCTL_T* pData, int argc, char** ppArgv )
       fprintf( stderr, "ERROR: Missing command!\n" );
       return -1;
    }
+
    return ret;
 }
 
@@ -369,7 +371,13 @@ int main( int argc, char** ppArgv )
       FD_ZERO( &readFds );
       FD_SET( FD_IN, &readFds );
       if( select( FD_IN+1, &readFds, NULL, NULL, &oTimeout ) > 0 )
-         read( FD_IN, oIoctl.pValue, oIoctl.size );
+      {
+         if( read( FD_IN, oIoctl.pValue, oIoctl.size ) < 0 )
+         {
+            fprintf( stderr, "ERROR: Unable to read STDIN: %s\n",
+                     strerror( errno ) );
+         }
+      }
    }
 
    ret = doIoctl( &oIoctl );
@@ -377,7 +385,13 @@ int main( int argc, char** ppArgv )
    if( oIoctl.size != 0 )
    {
       if( ret >= 0 )
-         write( FD_OUT, oIoctl.pValue, oIoctl.size );
+      {
+         if( write( FD_OUT, oIoctl.pValue, oIoctl.size ) < 0 )
+         {
+            fprintf( stderr, "ERROR: Unable to read STDOUT: %s\n",
+                     strerror( errno ) );
+         }
+      }
 
       free( oIoctl.pValue );
    }

@@ -1,0 +1,5 @@
+config BR2_PACKAGE_IOCTL4BASH
+    bool "ioctl4bash"
+   # depends on BR2_TOOLCHAIN_GCC
+    help
+      A simple tool to interact with device drivers using ioctl calls.
